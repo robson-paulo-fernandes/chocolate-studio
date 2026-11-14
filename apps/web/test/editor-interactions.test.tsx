@@ -282,12 +282,13 @@ it.each(['en', 'pt-BR'] as const)('keeps edits through direct language changes a
   const user = userEvent.setup();
   fireEvent.change(screen.getByLabelText(copy.label), { target: { value: 'Keyboard set' } });
   const jsonInput = screen.getByLabelText(copy.import) as HTMLInputElement;
-  const language = screen.getByLabelText(i18n.t('language', { ns: 'workbench' }));
+  const languageName = (value: string) => value === 'en' ? 'English' : 'Português';
+  const language = within(screen.getByRole('group', { name: i18n.t('language', { ns: 'workbench' }) })).getByRole('button', { name: languageName(locale) });
   language.focus();
   await user.tab();
   expect(document.activeElement).not.toBe(jsonInput);
   const nextLocale = locale === 'en' ? 'pt-BR' : 'en';
-  fireEvent.change(language, { target: { value: nextLocale } });
+  fireEvent.click(screen.getByRole('button', { name: languageName(nextLocale) }));
   await waitFor(() => expect(i18n.language).toBe(nextLocale));
   const nextCopy = nextLocale === 'en' ? en : pt;
   const connectionCopy = nextLocale === 'en' ? workbenchConnectionEn : workbenchConnectionPt;

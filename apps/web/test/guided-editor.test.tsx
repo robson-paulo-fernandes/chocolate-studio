@@ -48,6 +48,16 @@ beforeAll(async () => { await initializeLanguage('en'); });
 beforeEach(async () => { await i18n.changeLanguage('en'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
+describe('switch cards', () => {
+  it('selects a switch when its card is clicked anywhere', () => {
+    const { container } = showEditor(createDefaultConfiguration());
+    const card = container.querySelector('.controller-assignment:nth-child(3)')!;
+    fireEvent.click(card.querySelector('dd')!);
+    expect(container.querySelector('.controller-switch-C')!.getAttribute('aria-pressed')).toBe('true');
+    expect(card.getAttribute('data-selected')).toBe('true');
+  });
+});
+
 describe('pressed switch highlight', () => {
   it('rings only the switches named by the pressed signal', () => {
     const { container } = showEditor(createDefaultConfiguration(), { pressed: { id: 'e1', switches: ['C'] } });

@@ -311,7 +311,11 @@ export function App({
         </a>
         <nav className="workbench-app-tools" aria-label="Chocolate Studio">
           <details className="workbench-file-menu" ref={fileMenu}>
-            <summary>{wt("file")}</summary>
+            <summary>
+              <Icon name="file" />
+              <span className="file-label">{wt("file")}</span>
+              <Icon name="chevron" />
+            </summary>
             <div className="workbench-menu-items">
               <button
                 disabled={locked || incomplete}
@@ -346,37 +350,40 @@ export function App({
               </button>
             </div>
           </details>
-          <label className="workbench-language workbench-theme">
-            <span className="visually-hidden">{wt("theme")}</span>
-            <select
-              aria-label={wt("theme")}
-              value={theme}
-              onChange={(event) => void changeTheme(event.target.value as Theme)}
-            >
-              {THEMES.map((value) => (
-                <option key={value} value={value}>
-                  {wt(value === "auto" ? "themeAuto" : value === "light" ? "themeLight" : "themeDark")}
-                </option>
+          <div className="workbench-preferences">
+            <div className="segmented" role="group" aria-label={wt("theme")}>
+              {THEMES.map((value) => {
+                const label = wt(value === "auto" ? "themeAuto" : value === "light" ? "themeLight" : "themeDark");
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={theme === value}
+                    aria-label={`${wt("theme")}: ${label}`}
+                    title={label}
+                    onClick={() => void changeTheme(value)}
+                  >
+                    <Icon name={value === "auto" ? "auto" : value === "light" ? "sun" : "moon"} />
+                  </button>
+                );
+              })}
+            </div>
+            <div className="segmented" role="group" aria-label={wt("language")}>
+              {(["pt-BR", "en"] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  lang={value}
+                  aria-pressed={locale === value}
+                  aria-label={value === "pt-BR" ? "Português" : "English"}
+                  title={value === "pt-BR" ? "Português" : "English"}
+                  onClick={() => void changeLanguage(value)}
+                >
+                  {value === "pt-BR" ? "PT" : "EN"}
+                </button>
               ))}
-            </select>
-          </label>
-          <label className="workbench-language">
-            <span className="visually-hidden">{wt("language")}</span>
-            <select
-              aria-label={wt("language")}
-              value={locale}
-              onChange={(event) =>
-                void changeLanguage(event.target.value as Locale)
-              }
-            >
-              <option lang="pt-BR" value="pt-BR">
-                Português
-              </option>
-              <option lang="en" value="en">
-                English
-              </option>
-            </select>
-          </label>
+            </div>
+          </div>
         </nav>
         <input
           className="visually-hidden"

@@ -2,6 +2,7 @@
 
 ## Unreleased (fork robson-paulo-fernandes)
 
+- Top bar: File is a menu button; theme (auto/light/dark) and language (PT/EN) are segmented controls. A switch card selects its switch when clicked anywhere.
 - Dark theme: follows the system, or forced light/dark from the header (stored with the language preference).
 - The pedal drawing rings the switches whose configuration matches each message received from the connected Chocolate (a match, not proof of which switch was pressed).
 - Mac app: outgoing MIDI goes through a CoreMIDI helper, one packet per message. A Chocolate Plus ignored the fragmented SysEx that Chromium's Web MIDI output produced on macOS 26 and answered the same bytes sent as one packet.

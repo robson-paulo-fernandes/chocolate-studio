@@ -386,7 +386,11 @@ export function GuidedEditor({ configuration, onChange, groupId, onGroup, switch
       <dl className="controller-assignments">{SWITCH_IDS.map(id => {
         const entry = group.switches[id];
         const [first, second] = gestureKeys(entry.behavior);
-        return <div className="controller-assignment" data-selected={id === switchId} id={`${controllerId}-${id}`} key={id}><dt><button className="assignment-letter" type="button" aria-pressed={id === switchId} aria-label={wt('selectSwitch', { switch: id })} onClick={() => navigate(() => onSwitch(id))}>{id}</button><span>{entry.label}</span></dt>
+        return <div className="controller-assignment" data-selected={id === switchId} id={`${controllerId}-${id}`} key={id} onClick={event => {
+          // the letter button handles its own click; anywhere else on the card selects the switch too
+          if ((event.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+          if (id !== switchId) navigate(() => onSwitch(id));
+        }}><dt><button className="assignment-letter" type="button" aria-pressed={id === switchId} aria-label={wt('selectSwitch', { switch: id })} onClick={() => navigate(() => onSwitch(id))}>{id}</button><span>{entry.label}</span></dt>
           {assignmentSummaries?.[id] ? <dd>{assignmentSummaries[id]}</dd> : <><dd><span className="assignment-gesture">{t(first)}: </span>{summary(id)}</dd>{(entry.behavior !== 'single' && entry.behavior !== undefined || !!entry.secondaryMessages?.length) && <dd><span className="assignment-gesture">{t(second)}: </span>{summary(id, 'secondary')}</dd>}</>}
         </div>;
       })}</dl>

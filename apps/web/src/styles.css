@@ -2212,3 +2212,74 @@ dialog::backdrop {
   .controller-pulse { animation-duration: 1200ms; transform: none; }
   @keyframes controller-pulse { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
 }
+
+/* Top bar: File as a menu button; theme and language as compact segmented controls. */
+.workbench-file-menu > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  font-weight: 550;
+  cursor: pointer;
+  list-style: none;
+}
+.workbench-file-menu > summary::-webkit-details-marker { display: none; }
+.workbench-file-menu > summary::marker { content: ""; }
+.workbench-file-menu > summary:hover { background: var(--raised); }
+.workbench-file-menu[open] > summary { border-color: var(--amber); }
+.workbench-file-menu > summary svg { width: 18px; height: 18px; }
+.workbench-file-menu > summary svg:last-child { width: 14px; height: 14px; color: var(--muted); transition: transform 120ms; }
+.workbench-file-menu[open] > summary svg:last-child { transform: rotate(180deg); }
+.workbench-menu-items button svg { width: 18px; height: 18px; flex-shrink: 0; }
+.workbench-preferences {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.segmented {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-3);
+}
+.segmented > button {
+  min-height: 34px;
+  min-width: 36px;
+  padding: 4px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.segmented > button svg { width: 17px; height: 17px; }
+.segmented > button:hover { color: var(--cream); }
+.segmented > button[aria-pressed="true"] {
+  background: var(--panel);
+  color: var(--cream);
+  box-shadow: 0 1px 2px #0000001f, inset 0 0 0 1px var(--line);
+}
+.segmented > button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+@media (max-width: 600px) {
+  .workbench-app-tools { gap: 6px; }
+  .workbench-preferences { gap: 6px; }
+  .segmented > button { min-width: 30px; min-height: 36px; padding: 4px 5px; }
+  .workbench-file-menu > summary { padding: 8px 9px; gap: 4px; }
+  .workbench-file-menu > summary .file-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* The whole switch card selects that switch (the letter button stays the keyboard control). */
+.controller-assignment { cursor: pointer; }
+.controller-assignment:not([data-selected="true"]):hover { border-color: var(--line-strong); background: var(--surface-3); }

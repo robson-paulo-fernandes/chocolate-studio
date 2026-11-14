@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Destination, MidiMessage, ProgramChange } from '@chocolate-studio/midi';
 
-export type IconName = 'board' | 'preset' | 'destination' | 'backup' | 'download' | 'upload' | 'plus' | 'close' | 'check' | 'arrow' | 'activity';
+export type IconName = 'board' | 'preset' | 'destination' | 'backup' | 'download' | 'upload' | 'plus' | 'close' | 'check' | 'arrow' | 'activity' | 'file' | 'chevron' | 'sun' | 'moon' | 'auto';
 const paths: Record<IconName, string> = {
   board: 'M3 5h18v14H3z M7 9v3 M12 9v3 M17 9v3 M6 16h2 M11 16h2 M16 16h2',
   preset: 'M6 3h12v18l-6-4-6 4z M9 7h6 M9 10h6',
@@ -13,6 +13,10 @@ const paths: Record<IconName, string> = {
   upload: 'M12 16V4 M7 9l5-5 5 5 M4 17v4h16v-4',
   plus: 'M12 5v14 M5 12h14', close: 'M6 6l12 12 M18 6 6 18', check: 'M5 12l4 4 10-10',
   arrow: 'M4 12h16 M14 6l6 6-6 6', activity: 'M2 12h4l3-8 6 16 3-8h4',
+  file: 'M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 16h6', chevron: 'M6 9l6 6 6-6',
+  sun: 'M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8 M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
+  moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z',
+  auto: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18 M12 3v18',
 };
 export function Icon({ name }: { name: IconName }) {
   return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={paths[name]} /></svg>;

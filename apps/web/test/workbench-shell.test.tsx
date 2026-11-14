@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, expect, it } from 'vitest';
 import { App } from '../src/App.js';
 import { initializeLanguage } from '../src/i18n.js';
@@ -21,9 +21,8 @@ it('exposes language directly and leaves the editor and valid local changes inta
   fireEvent.click(screen.getByRole('button',{name:/Operating mode: Custom MIDI actions/}));
   fireEvent.change(screen.getByRole('combobox',{name:'Operating mode',exact:true}),{target:{value:'10'}});
   fireEvent.click(screen.getByRole('button',{name:'Use this mode',exact:true}));
-  const language=screen.getByRole('combobox',{name:'Language',exact:true});
-  fireEvent.change(language,{target:{value:'pt-BR'}});
-  await waitFor(()=>expect(screen.getByRole('combobox',{name:'Idioma',exact:true})).toBeTruthy());
+  fireEvent.click(within(screen.getByRole('group',{name:'Language',exact:true})).getByRole('button',{name:'Português',exact:true}));
+  await waitFor(()=>expect(screen.getByRole('group',{name:'Idioma',exact:true})).toBeTruthy());
   expect(screen.getByRole('heading',{name:'Chocolate Plus',exact:true})).toBeTruthy();
   expect(screen.queryByRole('button',{name:'Conectar Chocolate',exact:true})).toBeNull();
   await waitFor(async()=>expect((await database.preferences.get('locale'))?.value).toBe('pt-BR'));
