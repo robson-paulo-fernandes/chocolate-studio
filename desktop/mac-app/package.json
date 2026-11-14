@@ -1,0 +1,17 @@
+{
+  "name": "chocolate-studio-mac",
+  "productName": "Chocolate Studio",
+  "version": "0.1.0-beta.6",
+  "private": true,
+  "license": "MIT",
+  "description": "Mac app for the Chocolate Studio web editor (Electron shell, no backend)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "./build.sh"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.5.1"
+  }
+}

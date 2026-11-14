@@ -9,3 +9,8 @@ playwright-report/
 test-results/
 research/private/
 *.tsbuildinfo
+# Mac app (desktop/mac-app): installed and built files
+desktop/mac-app/node_modules/
+desktop/mac-app/web/
+desktop/mac-app/dist/
+desktop/mac-app/assets/icon.icns
