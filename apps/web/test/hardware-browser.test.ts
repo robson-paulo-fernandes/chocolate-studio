@@ -81,6 +81,16 @@ describe('browser hardware boundary with synthetic MIDI endpoints', () => {
     await expect(f.service.connect({ inputId: f.input.id, outputId: f.output.id })).rejects.toThrow('hardware.unsupportedDevice');
     expect(f.writes).toBe(0); expect(f.service.getSnapshot().capabilities.write).toBe(false);
   });
+  it('sends through the Mac app CoreMIDI bridge when present, never also through Web MIDI', async () => {
+    const f = setup(); const sent: { name: string; bytes: number[] }[] = [];
+    const webSend = f.output.send.bind(f.output); let webCalls = 0;
+    f.output.send = (data: number[]) => { webCalls++; webSend(data); };
+    vi.stubGlobal('chocolateNative', { sendMidi: async (name: string, bytes: number[]) => { sent.push({ name, bytes }); webSend(bytes); } });
+    await connect(f);
+    expect(f.service.getSnapshot().identity?.name).toBe('FootCtrlPlus_016');
+    expect(sent).toEqual([{ name: 'Synthetic output', bytes: [0xf0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7f, 0xf7] }]);
+    expect(webCalls).toBe(0);
+  });
   it('falls back to the CubeSuite read when the identity request gets no reply, read-only', async () => {
     const f = setup(null); f.bytes[0] = 3; await connect(f);
     const snapshot = f.service.getSnapshot();

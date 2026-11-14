@@ -13,4 +13,5 @@ research/private/
 desktop/mac-app/node_modules/
 desktop/mac-app/web/
 desktop/mac-app/dist/
+desktop/mac-app/bin/
 desktop/mac-app/assets/icon.icns

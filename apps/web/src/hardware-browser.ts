@@ -17,6 +17,8 @@ const CUBESUITE_READ_CHUNK = 0x3f1;
 const readOnly = { read: true, preview: true, write: false, restore: false };
 const disabled = { read: false, preview: false, write: false, restore: false };
 const enabled = { read: true, preview: true, write: true, restore: true };
+interface NativeMidi { sendMidi(outputName: string, bytes: number[]): Promise<void> }
+const nativeMidi = (): NativeMidi | undefined => (globalThis as { chocolateNative?: NativeMidi }).chocolateNative;
 const clone = <T>(value: T): T => structuredClone(value);
 const equal = (a: Uint8Array, b: Uint8Array) => a.length === b.length && a.every((v, i) => v === b[i]);
 const hash = async (bytes: Uint8Array) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', Uint8Array.from(bytes).buffer)), b => b.toString(16).padStart(2, '0')).join('');
@@ -209,7 +211,14 @@ export function createBrowserHardware(): HardwareService {
         };
         const transport: Transport = {
           get connected() { return generation === epoch && selectedInput.state === 'connected' && selectedOutput.state === 'connected'; },
-          async send(bytes) { selectedOutput.send(Array.from(bytes)); event('midi', 'SysEx', 'out', bytes); },
+          async send(bytes) {
+            // Mac app: one CoreMIDI packet per message (Chromium's Web MIDI output fragmented SysEx on macOS 26
+            // and the Chocolate Plus ignored it). Browsers keep Web MIDI.
+            const native = nativeMidi();
+            if (native) await native.sendMidi(selectedOutput.name ?? '', Array.from(bytes));
+            else selectedOutput.send(Array.from(bytes));
+            event('midi', 'SysEx', 'out', bytes);
+          },
           onData(listener) { dataListeners.add(listener); return () => dataListeners.delete(listener); },
           onDisconnect(listener) { disconnectListeners.add(listener); return () => disconnectListeners.delete(listener); },
         };

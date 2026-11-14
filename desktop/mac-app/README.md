@@ -16,3 +16,7 @@ with right-click → Open.
 
 `CHOCOLATE_SELFTEST=<file.png> npx electron .` loads the page, logs whether Web MIDI with SysEx is granted,
 saves a screenshot and quits.
+
+## MIDI output through CoreMIDI
+
+The app sends MIDI through `bin/chocolate-midi-send`, built by `build.sh` from `native/midi-send.swift` (needs `swiftc` from the Xcode command line tools). Each message goes to the selected output as one CoreMIDI packet. On macOS 26, MIDI Monitor showed Chromium's Web MIDI output arriving fragmented (a lone `F0`, the message, an invalid byte); a Chocolate Plus (`FootCtrlPlus_016`) ignored those requests and answered the same bytes sent as one packet (SysEx Librarian, CubeSuite). Incoming MIDI still uses Web MIDI. The browser version is unchanged.

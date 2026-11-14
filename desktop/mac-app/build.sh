@@ -1,6 +1,6 @@
 #!/bin/bash
 # Builds "Chocolate Studio.app" (Apple Silicon) from this repository's web editor.
-# Needs, on macOS: Node.js (npx) and the Xcode command line tools (codesign, iconutil, sips).
+# Needs, on macOS: Node.js (npx) and the Xcode command line tools (swiftc, codesign, iconutil, sips).
 set -euo pipefail
 cd "$(dirname "$0")"
 ROOT="$(cd ../.. && pwd)"
@@ -15,6 +15,10 @@ echo "Web editor: install and build ($PNPM)"
 rm -rf web && cp -R "$ROOT/apps/web/dist" web
 
 [[ -d node_modules ]] || npm install --no-audit --no-fund
+
+echo "CoreMIDI sender: native/midi-send.swift -> bin/chocolate-midi-send"
+mkdir -p bin
+swiftc -O -target arm64-apple-macos13 -framework CoreMIDI native/midi-send.swift -o bin/chocolate-midi-send
 
 # icon: assets/icon-1024.png -> assets/icon.icns
 if [[ ! -f assets/icon.icns || assets/icon-1024.png -nt assets/icon.icns ]]; then
@@ -31,7 +35,7 @@ npx @electron/packager . "$APP_NAME" \
   --icon=assets/icon.icns \
   --app-bundle-id=local.chocolatestudio.app \
   --app-version="$VERSION" \
-  --ignore='^/dist' --ignore='^/assets' --ignore='^/build\.sh$'
+  --ignore='^/dist' --ignore='^/assets' --ignore='^/build\.sh$' --ignore='^/native'
 
 # ad-hoc signature so macOS accepts the bundle
 codesign --force --deep --sign - "$OUT"
