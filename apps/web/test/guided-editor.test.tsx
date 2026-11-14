@@ -48,6 +48,15 @@ beforeAll(async () => { await initializeLanguage('en'); });
 beforeEach(async () => { await i18n.changeLanguage('en'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
+describe('pressed switch highlight', () => {
+  it('rings only the switches named by the pressed signal', () => {
+    const { container } = showEditor(createDefaultConfiguration(), { pressed: { id: 'e1', switches: ['C'] } });
+    const pulses = container.querySelectorAll('.controller-pulse');
+    expect(pulses).toHaveLength(1);
+    expect(pulses[0]!.closest('.controller-switch')!.classList.contains('controller-switch-C')).toBe(true);
+  });
+});
+
 describe('direct equipment actions', () => {
   it('does not commit untouched assignments, selection or language changes', async () => {
     const changed = vi.fn();

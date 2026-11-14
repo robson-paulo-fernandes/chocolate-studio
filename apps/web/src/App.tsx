@@ -34,6 +34,9 @@ import { MusicalReview } from "./MusicalReview.js";
 import { ControllerReview } from "./ControllerReview.js";
 import { Dialog, Empty, Icon } from "./components.js";
 import { useWorkbenchTranslation } from "./workbench-i18n.js";
+import { applyTheme, isTheme, THEMES } from "./theme.js";
+import { pressedSwitches } from "./switch-test.js";
+import type { Theme } from "./theme.js";
 
 type Tool =
   | "connection"
@@ -60,6 +63,10 @@ export function App({
     hardware.getSnapshot,
     hardware.getSnapshot,
   );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const current = document.documentElement.dataset.theme;
+    return isTheme(current) ? current : "auto";
+  });
   const [editing, setEditing] = useState(false);
   const [tool, setTool] = useState<Tool>(null);
   const [groupId, setGroup] = useState("group-1");
@@ -219,6 +226,15 @@ export function App({
     ).configuration;
     await studio.markDeviceSynced(verifiedConfiguration);
   }
+  async function changeTheme(next: Theme) {
+    setTheme(next);
+    applyTheme(next);
+    try {
+      await database.preferences.put({ id: "theme", value: next });
+    } catch {
+      studio.setNotice("storageUnavailable");
+    }
+  }
   async function changeLanguage(next: Locale) {
     await i18n.changeLanguage(next);
     document.documentElement.lang = next;
@@ -330,6 +346,20 @@ export function App({
               </button>
             </div>
           </details>
+          <label className="workbench-language workbench-theme">
+            <span className="visually-hidden">{wt("theme")}</span>
+            <select
+              aria-label={wt("theme")}
+              value={theme}
+              onChange={(event) => void changeTheme(event.target.value as Theme)}
+            >
+              {THEMES.map((value) => (
+                <option key={value} value={value}>
+                  {wt(value === "auto" ? "themeAuto" : value === "light" ? "themeLight" : "themeDark")}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="workbench-language">
             <span className="visually-hidden">{wt("language")}</span>
             <select
@@ -498,6 +528,7 @@ export function App({
                     <GuidedEditor
                       {...editorProps}
                       {...contextualTools}
+                      pressed={pressedSwitches(device, studio.configuration, groupId)}
                       disabled={locked}
                       onPendingChange={setPendingAction}
                     />

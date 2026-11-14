@@ -4,12 +4,15 @@ import { App } from './App.js';
 import { database } from './storage.js';
 import { initializeLanguage } from './i18n.js';
 import { createBrowserHardware } from './hardware-browser.js';
+import { applyTheme, isTheme } from './theme.js';
 import './styles.css';
 
 let locale: 'pt-BR' | 'en' = navigator.language.startsWith('pt') ? 'pt-BR' : 'en';
 try {
   const preference = await database.preferences.get('locale');
   if (preference?.value === 'pt-BR' || preference?.value === 'en') locale = preference.value;
+  const theme = await database.preferences.get('theme');
+  if (isTheme(theme?.value)) applyTheme(theme.value);
 } catch {
   // The editor reports unavailable storage and keeps export usable.
 }

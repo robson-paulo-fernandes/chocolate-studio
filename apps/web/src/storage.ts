@@ -1,3 +1,4 @@
+import type { Theme } from './theme.js';
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
 import type { StudioConfiguration } from '@chocolate-studio/midi';
@@ -14,7 +15,7 @@ export interface SavedDraft {
   recoveryBaseline?: StudioConfiguration;
 }
 export interface Backup { id: string; name: string; configuration: StudioConfiguration; createdAt: number }
-interface Preference { id: 'locale'; value: Locale }
+type Preference = { id: 'locale'; value: Locale } | { id: 'theme'; value: Theme };
 export class DraftConflict extends Error {}
 
 export class StudioDatabase extends Dexie {

@@ -1,6 +1,6 @@
 import { SWITCH_IDS, getEquipmentProfile, localizeEquipmentText } from '@chocolate-studio/midi';
 import type { EquipmentLocale, MidiMessage, StudioConfiguration, SwitchId } from '@chocolate-studio/midi';
-import type { HardwareEvent } from './hardware.js';
+import type { HardwareEvent, HardwareSnapshot } from './hardware.js';
 
 /**
  * Physical switch test: what the Chocolate sends when a switch is pressed, set against the configuration read
@@ -120,4 +120,24 @@ export function switchTestEntries(history: readonly HardwareEvent[], since: numb
       candidates: configuration ? findCandidates(configuration, message, locale) : [] });
   }
   return entries.reverse();
+}
+
+/** Switches of one group whose configured messages match the newest incoming message, if it is recent. The id
+ * changes with every message so the drawing can replay its highlight. Like findCandidates, this shows where the
+ * message is configured, not proof of which switch was pressed. */
+export function pressedSwitches(state: Pick<HardwareSnapshot, 'status' | 'history'>, configuration: StudioConfiguration,
+  groupId: string, now = Date.now(), windowMs = 1500): { id: string; switches: SwitchId[] } | undefined {
+  if (state.status !== 'connected' && state.status !== 'busy') return undefined;
+  for (let index = state.history.length - 1; index >= 0; index--) {
+    const event = state.history[index]!;
+    if (event.direction !== 'in' || event.kind !== 'midi' || !event.bytes) continue;
+    if (now - event.time > windowMs) return undefined;
+    const message = decodeChannelMessage(event.bytes);
+    if (!message) continue; // SysEx replies to the editor are not presses
+    const groupIndex = configuration.groups.findIndex(group => group.id === groupId);
+    const switches = [...new Set(findCandidates(configuration, message, 'en')
+      .filter(candidate => candidate.groupIndex === groupIndex).map(candidate => candidate.switchId))];
+    return switches.length ? { id: event.id, switches } : undefined;
+  }
+  return undefined;
 }

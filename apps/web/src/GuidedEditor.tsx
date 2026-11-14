@@ -28,6 +28,8 @@ export interface GuidedEditorProps {
   children?: ReactNode;
   externalPending?: boolean;
   midiEditable?: boolean;
+  /** switches whose configuration matches the newest message from the connected Chocolate (highlight only) */
+  pressed?: { id: string; switches: SwitchId[] } | undefined;
   assignmentSummaries?: Partial<Record<SwitchId, string>>;
   /** Contextual tools are parent-owned dialogs, not document/File commands. */
   onManageDestinations?: () => void;
@@ -288,7 +290,7 @@ function ActionEditor({ configuration, onChange, groupId, switchId, confirm, des
  * Forms are cached by group/switch/sequence, not keyed by configuration or MIDI bytes.
  * Secondary controls follow the action core; invalid retained names reveal their disclosure.
  */
-export function GuidedEditor({ configuration, onChange, groupId, onGroup, switchId, onSwitch, confirm, destinationId, disabled = false, profiles = equipmentProfiles, onPendingChange, sequence, onSequence, switchOptions, children, externalPending = false, midiEditable = true, assignmentSummaries, onManageDestinations, onManagePresets }: GuidedEditorProps) {
+export function GuidedEditor({ configuration, onChange, groupId, onGroup, switchId, onSwitch, confirm, destinationId, disabled = false, profiles = equipmentProfiles, onPendingChange, sequence, onSequence, switchOptions, children, externalPending = false, midiEditable = true, assignmentSummaries, onManageDestinations, onManagePresets, pressed }: GuidedEditorProps) {
   const { t, i18n } = useTranslation();
   const { wt } = useWorkbenchTranslation();
   const locale = i18n.resolvedLanguage === 'en' ? 'en' : 'pt-BR';
@@ -377,7 +379,7 @@ export function GuidedEditor({ configuration, onChange, groupId, onGroup, switch
       <div className="controller-chassis"><span className="controller-wordmark" aria-hidden="true">CHOCOLATE PLUS</span><div className="controller-deck" role="group" aria-label={t('controllerDiagram')} aria-describedby={`${controllerId}-preview`}>
         <span className="controller-pair pair-e" aria-hidden="true"><span>E</span></span><span className="controller-pair pair-f" aria-hidden="true"><span>F</span></span>
         {SWITCH_IDS.map(id => <Fragment key={id}>{id === 'C' && <div className="controller-display"><span>{wt('preview')}</span><strong>{switchId}</strong></div>}
-          <button type="button" style={{ minHeight: 44, minWidth: 44 }} className={`controller-switch controller-switch-${id}`} aria-pressed={switchId === id} aria-label={t('guided.editChoice', { choice: id })} aria-describedby={`${controllerId}-${id}`} onClick={() => navigate(() => onSwitch(id))}><span className="controller-metal" aria-hidden="true"><span /></span><span className="controller-letter" aria-hidden="true">{id}</span></button>
+          <button type="button" style={{ minHeight: 44, minWidth: 44 }} className={`controller-switch controller-switch-${id}`} aria-pressed={switchId === id} aria-label={t('guided.editChoice', { choice: id })} aria-describedby={`${controllerId}-${id}`} onClick={() => navigate(() => onSwitch(id))}><span className="controller-metal" aria-hidden="true"><span />{pressed?.switches.includes(id) && <span key={pressed.id} className="controller-pulse" />}</span><span className="controller-letter" aria-hidden="true">{id}</span></button>
         </Fragment>)}
       </div></div>
       <p className="guided-preview-note" id={`${controllerId}-preview`}>{t('guided.localPreview')}</p>

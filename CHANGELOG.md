@@ -2,6 +2,8 @@
 
 ## Unreleased (fork robson-paulo-fernandes)
 
+- Dark theme: follows the system, or forced light/dark from the header (stored with the language preference).
+- The pedal drawing rings the switches whose configuration matches each message received from the connected Chocolate (a match, not proof of which switch was pressed).
 - Mac app: outgoing MIDI goes through a CoreMIDI helper, one packet per message. A Chocolate Plus ignored the fragmented SysEx that Chromium's Web MIDI output produced on macOS 26 and answered the same bytes sent as one packet.
 - Connection: if the identity request gets no reply, probe with CubeSuite's 1009-byte flash read and, if it answers, connect read-only.
 - Added a Neural DSP Nano Cortex destination profile from the Nano Cortex User Manual 2.2.0: preset 1–64, Gate/Capture/CAB-IR and FX slot 1–5 on/off, tap tempo, tuner on/off and expression position. Every action remains `not-tested` on hardware.

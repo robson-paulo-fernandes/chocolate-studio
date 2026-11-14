@@ -7,8 +7,8 @@
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   color-scheme: light;
-  color: #272b2a;
-  background: #f4f3ef;
+  color: var(--cream);
+  background: var(--coal);
   --coal: #f4f3ef;
   --panel: #fffefa;
   --raised: #eef0e9;
@@ -24,7 +24,69 @@
   --control-line: #bec7ba;
   --selection: #f7edda;
   --signal: #356749;
+  --surface-2: #ebeee5;
+  --surface-3: #f2f4ec;
+  --line-strong: #c9d0c3;
+  --text-2: #4e584f;
+  --amber-text: #675222;
+  --notice-bg: #fff3df;
+  --notice-line: #d8b87b;
+  --focus: #94641d;
   --save-height: 100px;
+}
+/* Dark theme: follows macOS unless the header choice forces light or dark (data-theme on <html>). The pedal
+   drawing keeps its own fixed colors in both themes. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --coal: #1a1e1c;
+    --panel: #232826;
+    --raised: #2b312e;
+    --cream: #e8e6df;
+    --muted: #a5ada7;
+    --amber: #d9a54a;
+    --line: #3b423e;
+    --danger: #e58a74;
+    --chassis: #0f1310;
+    --chassis-edge: #343b35;
+    --control: #1e2321;
+    --control-line: #4b534e;
+    --selection: #3b3322;
+    --signal: #7cc597;
+    --surface-2: #2a302d;
+    --surface-3: #262b29;
+    --line-strong: #4b534e;
+    --text-2: #bac2bc;
+    --amber-text: #e4bb6a;
+    --notice-bg: #352d1e;
+    --notice-line: #6f5b33;
+    --focus: #e4bb6a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --coal: #1a1e1c;
+  --panel: #232826;
+  --raised: #2b312e;
+  --cream: #e8e6df;
+  --muted: #a5ada7;
+  --amber: #d9a54a;
+  --line: #3b423e;
+  --danger: #e58a74;
+  --chassis: #0f1310;
+  --chassis-edge: #343b35;
+  --control: #1e2321;
+  --control-line: #4b534e;
+  --selection: #3b3322;
+  --signal: #7cc597;
+  --surface-2: #2a302d;
+  --surface-3: #262b29;
+  --line-strong: #4b534e;
+  --text-2: #bac2bc;
+  --amber-text: #e4bb6a;
+  --notice-bg: #352d1e;
+  --notice-line: #6f5b33;
+  --focus: #e4bb6a;
 }
 * {
   box-sizing: border-box;
@@ -64,14 +126,14 @@ button:disabled {
   opacity: 0.48;
 }
 button:hover:not(:disabled) {
-  background: #e9ece3;
+  background: var(--surface-2);
 }
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #94641d;
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 input,
@@ -187,7 +249,7 @@ label,
   font-weight: 550;
 }
 .field > span {
-  color: #4e584f;
+  color: var(--text-2);
 }
 .field input,
 .field select {
@@ -249,7 +311,7 @@ label,
 .text-button {
   background: transparent;
   border-color: transparent;
-  color: #675222;
+  color: var(--amber-text);
   padding: 8px 3px;
   font-weight: 500;
 }
@@ -281,10 +343,10 @@ label,
 .warning-text,
 .workbench-mode-change,
 .workbench-incomplete {
-  border: 1px solid #d8b87b;
-  background: #fff3df;
+  border: 1px solid var(--notice-line);
+  background: var(--notice-bg);
   border-radius: 8px;
-  color: #604918;
+  color: var(--amber-text);
   padding: 12px 16px;
   font-size: 13px;
 }
@@ -519,7 +581,7 @@ label,
   padding: 14px 16px;
   background: var(--raised);
   border-radius: 6px;
-  color: #4d594e;
+  color: var(--text-2);
   font-size: 14px;
 }
 .workbench-mode-change {
@@ -615,6 +677,7 @@ label,
   outline-offset: 2px;
 }
 .controller-metal {
+  position: relative;
   display: grid;
   place-items: center;
   width: clamp(36px, 4.8vw, 62px);
@@ -633,7 +696,7 @@ label,
     0 0 0 4px #d8dcdd55,
     0 4px 4px #101213cc;
 }
-.controller-metal > span {
+.controller-metal > span:first-child {
   width: 73%;
   aspect-ratio: 1;
   border-radius: 50%;
@@ -810,7 +873,7 @@ label,
 }
 .controller-assignment dd {
   margin: 5px 0;
-  color: #4e594f;
+  color: var(--text-2);
   font-size: 13px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -907,7 +970,7 @@ label,
   gap: 5px;
   border-radius: 8px;
   padding: 4px;
-  background: #edf0e8;
+  background: var(--surface-2);
   min-width: 0;
 }
 .gesture-choice {
@@ -933,7 +996,7 @@ label,
 }
 .gesture-choice[aria-pressed="true"] {
   background: var(--panel);
-  border-color: #cbd2c5;
+  border-color: var(--line-strong);
   box-shadow: 0 1px 2px #0000000c;
 }
 .gesture-choices > .text-button {
@@ -970,7 +1033,7 @@ label,
   border-top: 1px solid var(--line);
   padding-top: 16px;
   font-size: 13px;
-  color: #4e594f;
+  color: var(--text-2);
   line-height: 1.65;
 }
 .guided-midi {
@@ -1096,7 +1159,7 @@ label,
 .message-card {
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #f5f6f0;
+  background: var(--surface-3);
   padding: 16px;
   margin: 14px 0;
 }
@@ -1170,7 +1233,7 @@ label,
 .segmented button.active,
 .segmented button[aria-pressed="true"] {
   background: var(--panel);
-  border-color: #c9d0c2;
+  border-color: var(--line-strong);
 }
 .group-settings {
   border-top: 1px solid var(--line);
@@ -1413,8 +1476,8 @@ dialog::backdrop {
   margin: 18px 0;
 }
 .musical-change {
-  background: #f0f3e9;
-  border: 1px solid #cad3bd;
+  background: var(--surface-3);
+  border: 1px solid var(--line-strong);
   border-radius: 7px;
   padding: 16px;
   margin: 14px 0;
@@ -1789,7 +1852,7 @@ dialog::backdrop {
   background: transparent;
   border-color: transparent;
   font-size: 13px;
-  color: #675222;
+  color: var(--amber-text);
   padding-inline: 0;
 }
 .connection-experience-help {
@@ -1831,7 +1894,7 @@ dialog::backdrop {
   justify-content: space-between;
   gap: 20px;
   padding: 14px 32px;
-  border-top: 1px solid #c9d0c5;
+  border-top: 1px solid var(--line-strong);
   background: var(--panel);
   max-height: min(40dvh, 300px);
   overflow: auto;
@@ -1891,7 +1954,7 @@ dialog::backdrop {
 }
 .device-save-warning {
   font-size: 12px;
-  color: #795a24;
+  color: var(--amber-text);
   margin: 4px 0;
 }
 .device-save-backup {
@@ -1925,8 +1988,8 @@ dialog::backdrop {
 }
 .device-save-mode-impact {
   padding: 14px;
-  background: #fff3df;
-  border: 1px solid #d8b87b;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-line);
   border-radius: 7px;
   font-size: 13px;
 }
@@ -2039,8 +2102,8 @@ dialog::backdrop {
 }
 .workbench-incomplete {
   padding: 12px 16px;
-  background: #fff3df;
-  border: 1px solid #d8b87b;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-line);
   border-radius: 7px;
   font-size: 13px;
 }
@@ -2129,3 +2192,23 @@ dialog::backdrop {
 .switch-test-list > li { display: grid; gap: 2px; padding: 8px 10px; border-radius: 8px; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
 .switch-test-list ul { margin: 2px 0 0; padding-left: 18px; }
 .switch-test-time { font-size: 12px; opacity: .7; font-variant-numeric: tabular-nums; }
+
+/* A message from the connected Chocolate that matches this switch's configuration: a short amber ring. */
+.controller-pulse {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 3px solid var(--amber);
+  box-shadow: 0 0 14px var(--amber);
+  opacity: 0;
+  pointer-events: none;
+  animation: controller-pulse 700ms ease-out;
+}
+@keyframes controller-pulse {
+  0% { opacity: 1; transform: scale(0.92); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .controller-pulse { animation-duration: 1200ms; transform: none; }
+  @keyframes controller-pulse { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+}

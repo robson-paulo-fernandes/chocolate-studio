@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { applyEquipmentAction, createDefaultConfiguration } from '@chocolate-studio/midi';
 import type { StudioConfiguration } from '@chocolate-studio/midi';
-import { decodeChannelMessage, findCandidates, switchTestEntries } from '../src/switch-test.js';
+import { decodeChannelMessage, findCandidates, pressedSwitches, switchTestEntries } from '../src/switch-test.js';
 import { SwitchTest } from '../src/SwitchTest.js';
 import type { HardwareEvent, HardwareSnapshot } from '../src/hardware.js';
 import { i18n, initializeLanguage } from '../src/i18n.js';
@@ -99,5 +99,20 @@ describe('SwitchTest panel', () => {
     rerender(<SwitchTest state={snapshot({ observed, history: [midiIn([0xc0, 1], Date.now() + 1000)] })} />);
     expect(screen.getByText(/PC 1 \(slot de preset 2\)/)).toBeTruthy();
     expect(screen.getAllByText(/Grupo \d \(Group \d\) · B · toque/)).toHaveLength(2);
+  });
+});
+
+describe('pressedSwitches', () => {
+  const state = (history: HardwareEvent[], status: HardwareSnapshot['status'] = 'connected') => ({ status, history });
+  it('names the switches of the edited group configured with the newest recent message', () => {
+    const pressed = pressedSwitches(state([midiIn([0xc0, 0], 900, 'old'), midiIn([0xc0, 2], 1000, 'new')]), configuration(), 'group-1', 1500);
+    expect(pressed).toEqual({ id: 'new', switches: ['C'] });
+  });
+  it('ignores SysEx replies, stale messages, other groups and a disconnected controller', () => {
+    expect(pressedSwitches(state([midiIn([0xc0, 1], 1000), { ...midiIn([0xf0, 0x7f, 0xf7], 1100), summary: 'SysEx' }]), configuration(), 'group-1', 1200))
+      .toEqual({ id: 'e1000', switches: ['B'] });
+    expect(pressedSwitches(state([midiIn([0xc0, 1], 1000)]), configuration(), 'group-1', 4000)).toBeUndefined();
+    expect(pressedSwitches(state([midiIn([0xc0, 9], 1000)]), configuration(), 'group-1', 1100)).toBeUndefined();
+    expect(pressedSwitches(state([midiIn([0xc0, 1], 1000)], 'disconnected'), configuration(), 'group-1', 1100)).toBeUndefined();
   });
 });
