@@ -22,7 +22,7 @@ async function ready(configuration = initialConfiguration('en')) {
   return rendered;
 }
 function openFiles() {
-  const summary = screen.getByText(i18n.t('file', { ns: 'workbench' }), { selector: 'summary' });
+  const summary = screen.getByText(i18n.t('file', { ns: 'workbench' }), { selector: '.file-label' }).closest('summary')!;
   if (!summary.parentElement?.hasAttribute('open')) fireEvent.click(summary);
 }
 function openPresets() {
