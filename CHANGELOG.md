@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (fork robson-paulo-fernandes)
+
+- Added a Neural DSP Nano Cortex destination profile from the Nano Cortex User Manual 2.2.0: preset 1–64, Gate/Capture/CAB-IR and FX slot 1–5 on/off, tap tempo, tuner on/off and expression position. Every action remains `not-tested` on hardware.
+- Citations may point to a web manual's section anchors when the manufacturer publishes no PDF. Connection routes may name TRS MIDI Type-A.
+- Added **Test switches** to the hardware panel: incoming MIDI from the connected Chocolate is listed with every switch whose read configuration sends it. It is read-only and never claims which press happened. Whether the Chocolate sends switch MIDI over USB while connected for configuration is not yet verified.
+
 ## 0.1.0-beta.5 — 2026-11-08 UTC
 
 - Added an explicit operating-mode step after reading the Chocolate. All thirteen observed CubeSuite modes are available; continuing keeps the mode read from the device.

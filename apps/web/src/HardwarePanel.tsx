@@ -14,6 +14,7 @@ import { useConnectionTranslation } from './connection-i18n.js';
 import { bindPreview, previewIsCurrent } from './connection-preview.js';
 import type { PreviewApproval } from './connection-preview.js';
 import { configurationFromBytes } from './hardware-mapping.js';
+import { SwitchTest } from './SwitchTest.js';
 
 export interface HardwarePanelProps {
   service: HardwareService;
@@ -175,6 +176,7 @@ export function HardwarePanel({ service, state, configuration, onReviewRead, onN
         <div className="button-row"><button className="text-button" onClick={() => exportControllerBackup(raw)}>{t('download')}</button>
           <button className="text-button" disabled={busy || !state.capabilities.restore || !backup.ready} onClick={() => setRestore(structuredClone(raw))}>{t('restoreRaw')}</button></div></article>)}
     </details>
+    {!recoveryOnly && <SwitchTest state={state} />}
     <details><summary>{ct('historyDetails')}</summary><ol>{state.history.map(event => <li key={event.id}>{new Date(event.time).toLocaleTimeString(i18n.language)} · {t(event.summary, { defaultValue: event.summary })}</li>)}</ol></details>
 
     {preview && <Dialog title={t('writeReview')} onClose={() => { if (!busy) { previewGeneration.current++; setApproval(null); } }}>

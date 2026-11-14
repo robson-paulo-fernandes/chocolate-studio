@@ -2123,3 +2123,9 @@ dialog::backdrop {
     padding-inline: 12px;
   }
 }
+
+/* Test switches: incoming MIDI set against the read configuration */
+.switch-test-list { display: grid; gap: 8px; padding-left: 0; list-style: none; max-height: 320px; overflow-y: auto; }
+.switch-test-list > li { display: grid; gap: 2px; padding: 8px 10px; border-radius: 8px; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.switch-test-list ul { margin: 2px 0 0; padding-left: 18px; }
+.switch-test-time { font-size: 12px; opacity: .7; font-variant-numeric: tabular-nums; }
