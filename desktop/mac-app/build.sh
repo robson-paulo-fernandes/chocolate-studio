@@ -35,7 +35,8 @@ npx @electron/packager . "$APP_NAME" \
   --icon=assets/icon.icns \
   --app-bundle-id=local.chocolatestudio.app \
   --app-version="$VERSION" \
-  --ignore='^/dist' --ignore='^/assets' --ignore='^/build\.sh$' --ignore='^/native'
+  --ignore='^/dist' --ignore='^/assets' --ignore='^/build\.sh$' --ignore='^/native' \
+  --asar.unpackDir=bin
 
 # ad-hoc signature so macOS accepts the bundle
 codesign --force --deep --sign - "$OUT"

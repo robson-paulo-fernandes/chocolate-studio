@@ -42,7 +42,9 @@ function limitPermissions() {
     MIDI_PERMISSIONS.has(permission) && isAppUrl(requestingOrigin || (webContents && webContents.getURL()) || ''));
 }
 
-const HELPER = path.join(__dirname, 'bin', 'chocolate-midi-send');
+// The packaged app keeps its files in app.asar; an executable cannot run from inside it, so build.sh unpacks bin/
+// to app.asar.unpacked.
+const HELPER = path.join(__dirname.replace(/app\.asar$/, 'app.asar.unpacked'), 'bin', 'chocolate-midi-send');
 let helper = null;
 let nextId = 1;
 const waiting = new Map();
