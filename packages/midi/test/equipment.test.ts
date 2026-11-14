@@ -26,7 +26,7 @@ function syntheticProfile(): EquipmentProfile {
     revision: '1', url: 'https://example.invalid/synthetic' }];
   profile.setup = [{ id: 'channel', label: { en: 'Channel', 'pt-BR': 'Canal' }, instructions: profile.label,
     citations: [{ sourceId: 'synthetic-source', pdfPages: [1], section: 'Synthetic fixture' }] }];
-  profile.connection.citations = profile.setup[0]!.citations.map((citation) => ({ ...citation, pdfPages: [...citation.pdfPages] }));
+  profile.connection.citations = structuredClone(profile.setup[0]!.citations);
   profile.unavailable = [];
   profile.actions = [{ id: 'select-slot', label: { en: 'Select slot', 'pt-BR': 'Selecionar posição' },
     description: profile.label, parameters: { slot: { type: 'integer', label: profile.label, minimum: 10, maximum: 12, initial: 10 } },
@@ -203,5 +203,67 @@ describe('versioned action bindings and preservation', () => {
     expect(() => applyEquipmentAction(original, 'group-1', 'A', 'primary', { ...invoke(2), destinationId: 'missing' })).toThrow();
     expect(() => applyEquipmentAction(original, 'group-1', 'A', 'secondary', invoke(25))).toThrow();
     expect(original).toEqual(snapshot);
+  });
+});
+
+describe('Neural DSP Nano Cortex profile', () => {
+  const nano = getEquipmentProfile('neuraldsp.nano-cortex', '0.1.0')!;
+  const compile = (actionId: string, parameters = {}, channel = 1) =>
+    compileEquipmentAction(nano, actionId, parameters, { ...destination, channel });
+
+  it('is in the catalog and validates', () => {
+    expect(nano).toBeDefined();
+    expect(() => equipmentProfileSchema.parse(JSON.parse(JSON.stringify(nano)))).not.toThrow();
+  });
+
+  it.each([[1, 0, 1], [12, 11, 5], [64, 63, 16]])('maps preset %i to PC%i on channel %i', (preset, program, channel) => {
+    expect(compile('select-preset', { 'preset-number': preset }, channel))
+      .toEqual([{ type: 'pc', channel, program, destinationId: destination.id }]);
+  });
+
+  it.each([0, 65])('rejects preset %i without clamping', (preset) => {
+    expect(() => compile('select-preset', { 'preset-number': preset })).toThrow();
+  });
+
+  it.each([
+    ['gate-on', 34, 127], ['gate-off', 34, 0], ['capture-on', 35, 127], ['cab-ir-off', 36, 0],
+    ['fx-1-on', 37, 127], ['fx-3-off', 39, 0], ['fx-5-on', 41, 127],
+    ['tap-tempo', 42, 127], ['tuner-on', 43, 127], ['tuner-off', 43, 0],
+  ])('maps %s to CC%i=%i', (actionId, controller, value) => {
+    expect(compile(actionId)).toEqual([{ type: 'cc', channel: 1, controller, value, destinationId: destination.id }]);
+  });
+
+  it.each([[0, 0], [64, 64], [127, 127]])('maps expression position %i to CC1=%i', (position, value) => {
+    expect(compile('expression-position', { position })).toEqual([{ type: 'cc', channel: 1, controller: 1, value, destinationId: destination.id }]);
+  });
+
+  it('rejects an expression position outside 0-127', () => {
+    expect(() => compile('expression-position', { position: 128 })).toThrow();
+  });
+
+  it('claims no hardware verification', () => {
+    expect(nano.actions.every((action) => action.hardwareVerification.status === 'not-tested')).toBe(true);
+  });
+});
+
+describe('citation locators', () => {
+  const withCitation = (citation: unknown) => {
+    const profile = JSON.parse(JSON.stringify(m5));
+    profile.setup[0].citations = [citation];
+    return profile;
+  };
+  const source = m5.sources[0]!.id;
+
+  it('accepts web-manual section anchors instead of PDF pages', () => {
+    expect(equipmentProfileSchema.safeParse(withCitation({ sourceId: source, anchors: ['#Incoming-MIDI-CC-List'], section: 'Web manual' })).success).toBe(true);
+  });
+
+  it.each([
+    ['both locators', { sourceId: source, pdfPages: [1], anchors: ['#A'], section: 'x' }],
+    ['no locator', { sourceId: source, section: 'x' }],
+    ['an anchor without #', { sourceId: source, anchors: ['Incoming'], section: 'x' }],
+    ['a duplicate anchor', { sourceId: source, anchors: ['#A', '#A'], section: 'x' }],
+  ])('rejects %s', (_name, citation) => {
+    expect(equipmentProfileSchema.safeParse(withCitation(citation)).success).toBe(false);
   });
 });

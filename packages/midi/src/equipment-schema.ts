@@ -23,12 +23,17 @@ export const equipmentActionInvocationSchema = safeJsonTreeSchema.pipe(z.strictO
 export type EquipmentActionInvocation = z.infer<typeof equipmentActionInvocationSchema>;
 
 const idsSchema = z.array(equipmentIdSchema).max(16).refine((ids) => new Set(ids).size === ids.length, 'Duplicate reference');
+// A citation points into a PDF by page, or into a web manual by section anchor (manufacturers such as
+// Neural DSP publish the manual only as an HTML page). Exactly one of the two locators.
 const citationSchema = z.strictObject({
   sourceId: equipmentIdSchema,
   pdfPages: z.array(z.number().int().min(1).max(4096)).min(1).max(16)
-    .refine((pages) => new Set(pages).size === pages.length, 'Duplicate PDF page'),
+    .refine((pages) => new Set(pages).size === pages.length, 'Duplicate PDF page').optional(),
+  anchors: z.array(z.string().min(2).max(128).regex(/^#[A-Za-z0-9._-]+$/)).min(1).max(16)
+    .refine((anchors) => new Set(anchors).size === anchors.length, 'Duplicate anchor').optional(),
   section: textSchema,
-});
+}).refine((citation) => (citation.pdfPages === undefined) !== (citation.anchors === undefined),
+  'A citation needs either pdfPages or anchors, not both');
 const citationsSchema = z.array(citationSchema).min(1).max(16);
 const sourceSchema = z.strictObject({
   id: equipmentIdSchema, publisher: textSchema, title: textSchema, revision: textSchema,
@@ -72,8 +77,8 @@ const profileShapeSchema = z.strictObject({
   manufacturer: textSchema, model: textSchema, label: equipmentTextSchema,
   sources: z.array(sourceSchema).min(1).max(16),
   connection: z.strictObject({
-    midiInputs: z.array(z.enum(['din5', 'usb-midi', 'ble-midi'])).min(1).max(3),
-    midiOutputs: z.array(z.enum(['din5', 'usb-midi', 'ble-midi'])).max(3),
+    midiInputs: z.array(z.enum(['din5', 'trs-midi-type-a', 'usb-midi', 'ble-midi'])).min(1).max(4),
+    midiOutputs: z.array(z.enum(['din5', 'trs-midi-type-a', 'usb-midi', 'ble-midi'])).max(4),
     directUsbMidi: z.boolean(), instructions: equipmentTextSchema, citations: citationsSchema,
   }),
   setup: z.array(z.strictObject({

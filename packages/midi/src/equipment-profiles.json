@@ -614,5 +614,1072 @@
         ]
       }
     ]
+  },
+  {
+    "kind": "destination-profile",
+    "schemaVersion": 1,
+    "profileVersion": "0.1.0",
+    "modelId": "neuraldsp.nano-cortex",
+    "manufacturer": "Neural DSP",
+    "model": "Nano Cortex",
+    "label": {
+      "en": "Neural DSP Nano Cortex",
+      "pt-BR": "Neural DSP Nano Cortex"
+    },
+    "sources": [
+      {
+        "id": "neuraldsp-nano-cortex-manual-2-2-0",
+        "publisher": "Neural DSP",
+        "title": "Nano Cortex User Manual",
+        "revision": "2.2.0 (NanOS 2.2.0), web manual",
+        "url": "https://neuraldsp.com/manual/nano-cortex"
+      }
+    ],
+    "connection": {
+      "midiInputs": [
+        "usb-midi",
+        "trs-midi-type-a"
+      ],
+      "midiOutputs": [
+        "usb-midi"
+      ],
+      "directUsbMidi": true,
+      "instructions": {
+        "en": "The Nano Cortex receives MIDI on its USB-C port and on the EXP/MIDI jack (TRS MIDI Type-A) when that jack is set to MIDI in the Cortex Cloud app. It does not take MIDI over Bluetooth. The EXP/MIDI jack is either MIDI or an expression pedal, not both. Reading Chocolate does not verify the Nano's response.",
+        "pt-BR": "O Nano Cortex recebe MIDI pela porta USB-C e pela entrada EXP/MIDI (TRS MIDI Tipo A) quando ela está em MIDI no app Cortex Cloud. Ele não recebe MIDI por Bluetooth. A entrada EXP/MIDI é MIDI ou pedal de expressão, não as duas coisas. Ler o Chocolate não verifica a resposta do Nano."
+      },
+      "citations": [
+        {
+          "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+          "anchors": [
+            "#Incoming-MIDI-Support",
+            "#Device-Settings"
+          ],
+          "section": "Cortex Cloud App / Incoming MIDI Support (TRS MIDI Type-A Routing); Device Settings / EXP/MIDI INPUT BEHAVIOR"
+        }
+      ]
+    },
+    "setup": [
+      {
+        "id": "midi-channel",
+        "label": {
+          "en": "Match the MIDI channel",
+          "pt-BR": "Igualar o canal MIDI"
+        },
+        "instructions": {
+          "en": "In the Cortex Cloud app, Device Settings sets the Nano Cortex base MIDI channel. Use the same explicit channel 1–16 on the named destination. The manual does not state a factory default; read it in the app.",
+          "pt-BR": "No app Cortex Cloud, Device Settings define o canal MIDI base do Nano Cortex. Use o mesmo canal explícito 1–16 no destino nomeado. O manual não informa o padrão de fábrica; confira no app."
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Device-Settings"
+            ],
+            "section": "Device Settings / EXP/MIDI INPUT BEHAVIOR / MIDI CHANNEL"
+          }
+        ]
+      },
+      {
+        "id": "trs-midi-mode",
+        "label": {
+          "en": "Set EXP/MIDI to MIDI (TRS only)",
+          "pt-BR": "Pôr EXP/MIDI em MIDI (só TRS)"
+        },
+        "instructions": {
+          "en": "For a TRS cable, set the EXP/MIDI input to MIDI in Cortex Cloud and use TRS MIDI Type-A. Over USB-C this setting is not needed.",
+          "pt-BR": "Para cabo TRS, coloque a entrada EXP/MIDI em MIDI no Cortex Cloud e use TRS MIDI Tipo A. Pela USB-C este ajuste não é necessário."
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-Support",
+              "#Device-Settings"
+            ],
+            "section": "Incoming MIDI Support / TRS MIDI Type-A Routing; Device Settings / EXP/MIDI INPUT BEHAVIOR"
+          }
+        ]
+      },
+      {
+        "id": "expression-assignments",
+        "label": {
+          "en": "Assign expression per preset",
+          "pt-BR": "Atribuir a expressão por preset"
+        },
+        "instructions": {
+          "en": "CC1 moves what the preset assigns to expression (gain, bass, mid, treble, amount; range and polarity in Cortex Cloud). Without an assignment, CC1 changes nothing audible.",
+          "pt-BR": "O CC1 move o que o preset atribui à expressão (gain, bass, mid, treble, amount; faixa e polaridade no Cortex Cloud). Sem atribuição, o CC1 não muda nada audível."
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Expression-Pedal-Configuration"
+            ],
+            "section": "Expression Pedal Configuration"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "select-preset",
+        "label": {
+          "en": "Select preset",
+          "pt-BR": "Selecionar preset"
+        },
+        "description": {
+          "en": "Recall one of the 64 preset slots.",
+          "pt-BR": "Chame um dos 64 slots de preset."
+        },
+        "parameters": {
+          "preset-number": {
+            "type": "integer",
+            "label": {
+              "en": "Preset number",
+              "pt-BR": "Número do preset"
+            },
+            "minimum": 1,
+            "maximum": 64,
+            "initial": 1
+          }
+        },
+        "messages": [
+          {
+            "type": "pc",
+            "channel": "destination",
+            "program": {
+              "parameter": "preset-number",
+              "offset": -1
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.pc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-Support"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI Support / Program Change Preset Recall (PC 0–63 = preset slots)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "gate-on",
+        "label": {
+          "en": "Input Gate on",
+          "pt-BR": "Ligar Input Gate"
+        },
+        "description": {
+          "en": "Switch Input Gate on (CC34=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o Input Gate (CC34=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 34,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Gate bypass (CC#34, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "gate-off",
+        "label": {
+          "en": "Input Gate off",
+          "pt-BR": "Desligar Input Gate"
+        },
+        "description": {
+          "en": "Bypass Input Gate (CC34=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o Input Gate (CC34=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 34,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Gate bypass (CC#34, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "capture-on",
+        "label": {
+          "en": "Capture slot on",
+          "pt-BR": "Ligar slot de Capture"
+        },
+        "description": {
+          "en": "Switch Capture slot on (CC35=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o slot de Capture (CC35=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 35,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Capture bypass (CC#35, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "capture-off",
+        "label": {
+          "en": "Capture slot off",
+          "pt-BR": "Desligar slot de Capture"
+        },
+        "description": {
+          "en": "Bypass Capture slot (CC35=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o slot de Capture (CC35=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 35,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Capture bypass (CC#35, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "cab-ir-on",
+        "label": {
+          "en": "CAB/IR slot on",
+          "pt-BR": "Ligar slot de CAB/IR"
+        },
+        "description": {
+          "en": "Switch CAB/IR slot on (CC36=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o slot de CAB/IR (CC36=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 36,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / CAB/IR bypass (CC#36, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "cab-ir-off",
+        "label": {
+          "en": "CAB/IR slot off",
+          "pt-BR": "Desligar slot de CAB/IR"
+        },
+        "description": {
+          "en": "Bypass CAB/IR slot (CC36=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o slot de CAB/IR (CC36=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 36,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / CAB/IR bypass (CC#36, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-1-on",
+        "label": {
+          "en": "FX slot 1 on",
+          "pt-BR": "Ligar FX slot 1"
+        },
+        "description": {
+          "en": "Switch FX slot 1 on (CC37=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o FX slot 1 (CC37=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 37,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 1 bypass (CC#37, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-1-off",
+        "label": {
+          "en": "FX slot 1 off",
+          "pt-BR": "Desligar FX slot 1"
+        },
+        "description": {
+          "en": "Bypass FX slot 1 (CC37=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o FX slot 1 (CC37=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 37,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 1 bypass (CC#37, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-2-on",
+        "label": {
+          "en": "FX slot 2 on",
+          "pt-BR": "Ligar FX slot 2"
+        },
+        "description": {
+          "en": "Switch FX slot 2 on (CC38=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o FX slot 2 (CC38=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 38,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 2 bypass (CC#38, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-2-off",
+        "label": {
+          "en": "FX slot 2 off",
+          "pt-BR": "Desligar FX slot 2"
+        },
+        "description": {
+          "en": "Bypass FX slot 2 (CC38=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o FX slot 2 (CC38=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 38,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 2 bypass (CC#38, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-3-on",
+        "label": {
+          "en": "FX slot 3 on",
+          "pt-BR": "Ligar FX slot 3"
+        },
+        "description": {
+          "en": "Switch FX slot 3 on (CC39=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o FX slot 3 (CC39=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 39,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 3 bypass (CC#39, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-3-off",
+        "label": {
+          "en": "FX slot 3 off",
+          "pt-BR": "Desligar FX slot 3"
+        },
+        "description": {
+          "en": "Bypass FX slot 3 (CC39=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o FX slot 3 (CC39=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 39,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 3 bypass (CC#39, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-4-on",
+        "label": {
+          "en": "FX slot 4 on",
+          "pt-BR": "Ligar FX slot 4"
+        },
+        "description": {
+          "en": "Switch FX slot 4 on (CC40=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o FX slot 4 (CC40=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 40,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 4 bypass (CC#40, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-4-off",
+        "label": {
+          "en": "FX slot 4 off",
+          "pt-BR": "Desligar FX slot 4"
+        },
+        "description": {
+          "en": "Bypass FX slot 4 (CC40=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o FX slot 4 (CC40=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 40,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 4 bypass (CC#40, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-5-on",
+        "label": {
+          "en": "FX slot 5 on",
+          "pt-BR": "Ligar FX slot 5"
+        },
+        "description": {
+          "en": "Switch FX slot 5 on (CC41=127; the manual documents 64–127 as on).",
+          "pt-BR": "Liga o FX slot 5 (CC41=127; o manual documenta 64–127 como ligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 41,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 5 bypass (CC#41, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "fx-5-off",
+        "label": {
+          "en": "FX slot 5 off",
+          "pt-BR": "Desligar FX slot 5"
+        },
+        "description": {
+          "en": "Bypass FX slot 5 (CC41=0; the manual documents 0–63 as off).",
+          "pt-BR": "Desliga o FX slot 5 (CC41=0; o manual documenta 0–63 como desligado)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 41,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / FX Slot 5 bypass (CC#41, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "tap-tempo",
+        "label": {
+          "en": "Tap tempo",
+          "pt-BR": "Marcar tempo"
+        },
+        "description": {
+          "en": "Tap along to set the tempo. Each message registers one tap.",
+          "pt-BR": "Toque no ritmo para definir o tempo. Cada mensagem registra um toque."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 42,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Tap Tempo (CC#42, any value 0–127 registers a tap)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "tuner-on",
+        "label": {
+          "en": "Tuner on",
+          "pt-BR": "Ligar afinador"
+        },
+        "description": {
+          "en": "Open the tuner (CC43=127).",
+          "pt-BR": "Abre o afinador (CC43=127)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 43,
+            "value": {
+              "constant": 127
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Tuner (CC#43, 64–127 on)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "tuner-off",
+        "label": {
+          "en": "Tuner off",
+          "pt-BR": "Desligar afinador"
+        },
+        "description": {
+          "en": "Close the tuner (CC43=0).",
+          "pt-BR": "Fecha o afinador (CC43=0)."
+        },
+        "parameters": {},
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 43,
+            "value": {
+              "constant": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Tuner (CC#43, 0–63 off)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      },
+      {
+        "id": "expression-position",
+        "label": {
+          "en": "Expression position",
+          "pt-BR": "Posição da expressão"
+        },
+        "description": {
+          "en": "Move the expression control to a fixed position: 0 is heel, 127 is toe. A fixed value on a switch does not give continuous pedal movement.",
+          "pt-BR": "Leva a expressão a uma posição fixa: 0 é calcanhar, 127 é ponta. Um valor fixo num botão não gera movimento contínuo de pedal."
+        },
+        "parameters": {
+          "position": {
+            "type": "integer",
+            "label": {
+              "en": "Position (0 heel – 127 toe)",
+              "pt-BR": "Posição (0 calcanhar – 127 ponta)"
+            },
+            "minimum": 0,
+            "maximum": 127,
+            "initial": 127
+          }
+        },
+        "messages": [
+          {
+            "type": "cc",
+            "channel": "destination",
+            "controller": 1,
+            "value": {
+              "parameter": "position",
+              "offset": 0
+            }
+          }
+        ],
+        "requirements": {
+          "capabilities": [
+            "midi.cc"
+          ],
+          "setupIds": [
+            "midi-channel",
+            "expression-assignments"
+          ]
+        },
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Cortex Cloud App / Incoming MIDI CC List / Expression (CC#1, 0 heel – 127 toe)"
+          }
+        ],
+        "hardwareVerification": {
+          "status": "not-tested"
+        }
+      }
+    ],
+    "unavailable": [
+      {
+        "id": "preset-banks",
+        "label": {
+          "en": "Bank select",
+          "pt-BR": "Seleção de banco"
+        },
+        "reason": "not-documented",
+        "description": {
+          "en": "The incoming MIDI list documents PC 0–63 for the 64 preset slots and no incoming bank select. No CC0/CC32 prefix is sent.",
+          "pt-BR": "A lista de MIDI recebido documenta PC 0–63 para os 64 slots e nenhuma seleção de banco recebida. Nenhum prefixo CC0/CC32 é enviado."
+        },
+        "requiredCapabilities": [
+          "midi.cc"
+        ],
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-Support",
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Incoming MIDI Support / Program Change Preset Recall; Incoming MIDI CC List"
+          }
+        ]
+      },
+      {
+        "id": "parameter-specific-cc",
+        "label": {
+          "en": "Control amp or effect parameters directly",
+          "pt-BR": "Controlar parâmetros do amp ou efeitos diretamente"
+        },
+        "reason": "not-documented",
+        "description": {
+          "en": "The incoming CC list has no per-parameter CCs (gain, tone, levels). Use expression (CC1) with per-preset assignments instead.",
+          "pt-BR": "A lista de CC recebidos não tem CCs por parâmetro (gain, tom, níveis). Use a expressão (CC1) com atribuições por preset."
+        },
+        "requiredCapabilities": [
+          "midi.cc"
+        ],
+        "citations": [
+          {
+            "sourceId": "neuraldsp-nano-cortex-manual-2-2-0",
+            "anchors": [
+              "#Incoming-MIDI-CC-List"
+            ],
+            "section": "Incoming MIDI CC List"
+          }
+        ]
+      }
+    ]
   }
 ]
