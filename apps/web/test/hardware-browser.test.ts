@@ -3,7 +3,8 @@ import { decodeCandidatePacket, encodeCandidatePacket } from '@chocolate-studio/
 import { createBrowserHardware } from '../src/hardware-browser';
 import type { HardwareService } from '../src/hardware.js';
 
-function setup(identity = 'FootCtrlPlus_016') {
+function setup(identity: string | null = 'FootCtrlPlus_016') {
+  const readLengths: number[] = [];
   let bytes = new Uint8Array(23646); bytes[0] = 3;
   let writes = 0; let corruptWrites = false;
   const writeRanges: { address: number; bytes: Uint8Array }[] = [];
@@ -19,11 +20,15 @@ function setup(identity = 'FootCtrlPlus_016') {
     async open() { return this; } async close() { return this; }
     send(data: number[]) {
       const packet = decodeCandidatePacket(data); const body = packet.body.toUint8Array(); let response: Uint8Array;
-      if (packet.command === 0x11) response = encodeCandidatePacket(0x11, new TextEncoder().encode(identity));
+      if (packet.command === 0x11) {
+        if (identity === null) return; // unit that ignores the identity request
+        response = encodeCandidatePacket(0x11, new TextEncoder().encode(identity));
+      }
       else {
         const address = new DataView(body.buffer).getUint32(1, true);
         const length = body[5]! | body[6]! << 8 | body[7]! << 16;
         if (packet.command === 0x23) {
+          readLengths.push(length);
           const result = new Uint8Array(8 + length); result.set(body); result.set(bytes.slice(address, address + length), 8);
           response = encodeCandidatePacket(0x23, result);
         } else if (packet.command === 0x22) {
@@ -44,7 +49,7 @@ function setup(identity = 'FootCtrlPlus_016') {
   vi.stubGlobal('navigator', { requestMIDIAccess: async () => access });
   return { service: createBrowserHardware(), input, output, get bytes() { return bytes; }, set bytes(value) { bytes = value; },
     get writes() { return writes; }, writeRanges, corrupt() { corruptWrites = true; }, afterIdentity(fn: () => void) { afterIdentity = fn; },
-    afterWrite(fn: () => void) { afterWrite = fn; } };
+    afterWrite(fn: () => void) { afterWrite = fn; }, readLengths };
 }
 async function connect(fixture: ReturnType<typeof setup>) {
   await fixture.service.requestPorts(); await fixture.service.connect({ inputId: fixture.input.id, outputId: fixture.output.id });
@@ -76,6 +81,18 @@ describe('browser hardware boundary with synthetic MIDI endpoints', () => {
     await expect(f.service.connect({ inputId: f.input.id, outputId: f.output.id })).rejects.toThrow('hardware.unsupportedDevice');
     expect(f.writes).toBe(0); expect(f.service.getSnapshot().capabilities.write).toBe(false);
   });
+  it('falls back to the CubeSuite read when the identity request gets no reply, read-only', async () => {
+    const f = setup(null); f.bytes[0] = 3; await connect(f);
+    const snapshot = f.service.getSnapshot();
+    expect(snapshot.status).toBe('connected');
+    expect(snapshot.identity?.name).toBe('FootCtrlPlus (no identity reply)');
+    expect(snapshot.capabilities).toEqual({ read: true, preview: true, write: false, restore: false });
+    expect(f.readLengths).toEqual([1009]);
+    const read = await f.service.read();
+    expect(read.rawBackup.bytes).toEqual(f.bytes);
+    expect(f.readLengths.slice(1)).toEqual([...Array(23).fill(1009), 23646 - 23 * 1009]);
+    expect(f.writes).toBe(0);
+  }, 10_000);
   it.each(['FootCtrlPlus_015', 'FootCtrlPlus_017', 'FootCtrlPlus_016-extra'])('refuses writes for unqualified identity %s', async identity => {
     const f = setup(identity); await f.service.requestPorts();
     await expect(f.service.connect({ inputId: f.input.id, outputId: f.output.id })).rejects.toThrow('hardware.unsupportedDevice');

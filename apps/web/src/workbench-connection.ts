@@ -1,6 +1,8 @@
 import type { HardwareSnapshot, MidiPort, PortSelection } from './hardware.js';
 
 export const QUALIFIED_CHOCOLATE_IDENTITY = 'FootCtrlPlus_016';
+/** Answers CubeSuite's read but not the identity request: read-only until its writes are qualified. */
+export const READ_ONLY_CHOCOLATE_IDENTITY = 'FootCtrlPlus (no identity reply)';
 export type ConnectionCandidate =
   | { kind: 'candidate'; selection: PortSelection; source: 'remembered' | 'profile' }
   | { kind: 'session' | 'none' | 'manual' | 'ambiguous' | 'missing-remembered' };
@@ -41,5 +43,6 @@ export async function midiPermission(): Promise<PermissionState | 'unknown'> {
 }
 
 export function qualifiedConnection(state: HardwareSnapshot): boolean {
-  return state.identity?.name === QUALIFIED_CHOCOLATE_IDENTITY && state.selection !== null && state.capabilities.read;
+  const name = state.identity?.name;
+  return (name === QUALIFIED_CHOCOLATE_IDENTITY || name === READ_ONLY_CHOCOLATE_IDENTITY) && state.selection !== null && state.capabilities.read;
 }

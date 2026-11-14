@@ -1,4 +1,4 @@
-import { ProtocolSession, encodeCandidatePacket } from '@chocolate-studio/chocolate/protocol';
+import { ProtocolSession, decodeFlashReadResponse, encodeCandidatePacket, encodeFlashRead } from '@chocolate-studio/chocolate/protocol';
 import { ChocolateError } from '@chocolate-studio/chocolate';
 import type { Transport } from '@chocolate-studio/chocolate';
 import { studioConfigurationSchema } from '@chocolate-studio/midi';
@@ -11,6 +11,10 @@ import { configurationFromBytes, configurationToBytes } from './hardware-mapping
 
 const CONFIG_SIZE = 23646;
 const QUALIFIED_IDENTITY = 'FootCtrlPlus_016';
+/** Units that ignore the 0x11 identity request but answer CubeSuite's flash read (observed: 1009-byte chunks from address 0). */
+export const UNIDENTIFIED_IDENTITY = 'FootCtrlPlus (no identity reply)';
+const CUBESUITE_READ_CHUNK = 0x3f1;
+const readOnly = { read: true, preview: true, write: false, restore: false };
 const disabled = { read: false, preview: false, write: false, restore: false };
 const enabled = { read: true, preview: true, write: true, restore: true };
 const clone = <T>(value: T): T => structuredClone(value);
@@ -211,13 +215,36 @@ export function createBrowserHardware(): HardwareService {
         };
         const connectedSession = new ProtocolSession(transport);
         protocol = connectedSession;
-        const identityPacket = await connectedSession.transact(encodeCandidatePacket(0x11, []), p => p.command === 0x11, { timeoutMs: 2000, signal: abort.signal });
+        let identityText: string | null = null;
+        try {
+          const identityPacket = await connectedSession.transact(encodeCandidatePacket(0x11, []), p => p.command === 0x11, { timeoutMs: 2000, signal: abort.signal });
+          identityText = new TextDecoder().decode(identityPacket.body.toUint8Array()).split('\0')[0]!;
+        } catch (error) {
+          if (!(error instanceof ChocolateError && error.code === 'TIMEOUT')) throw error;
+        }
         if (generation !== epoch || protocol !== connectedSession) return fail('hardware.disconnected');
-        const identityText = new TextDecoder().decode(identityPacket.body.toUint8Array()).split('\0')[0]!;
-        if (identityText !== QUALIFIED_IDENTITY) return fail('hardware.unsupportedDevice');
-        const identity: DeviceIdentity = { name: identityText, manufacturer: 'M-VAVE', model: 'Chocolate Plus', firmware: null };
-        publish({ status: 'connected', identity, selection: clone(selection), capabilities: enabled });
-        event('connection', identityText);
+        if (identityText !== null) {
+          if (identityText !== QUALIFIED_IDENTITY) return fail('hardware.unsupportedDevice');
+          const identity: DeviceIdentity = { name: identityText, manufacturer: 'M-VAVE', model: 'Chocolate Plus', firmware: null };
+          publish({ status: 'connected', identity, selection: clone(selection), capabilities: enabled });
+          event('connection', identityText);
+          return;
+        }
+        // No identity reply. Probe with the exact read CubeSuite was observed sending (read-only).
+        // The timed-out session is desynchronized by design; a fresh one serves the probe and later reads.
+        connectedSession.dispose();
+        const probeSession = new ProtocolSession(transport, undefined, { readChunkSize: CUBESUITE_READ_CHUNK });
+        protocol = probeSession;
+        event('connection', 'hardware.identityFallback');
+        await probeSession.transact(encodeFlashRead(4, 0, CUBESUITE_READ_CHUNK), p => {
+          if (p.command !== 0x23) return false;
+          const reply = decodeFlashReadResponse(p);
+          return reply.flashType === 4 && reply.address === 0 && reply.length === CUBESUITE_READ_CHUNK;
+        }, { timeoutMs: 2000, signal: abort.signal });
+        if (generation !== epoch || protocol !== probeSession) return fail('hardware.disconnected');
+        const identity: DeviceIdentity = { name: UNIDENTIFIED_IDENTITY, manufacturer: 'M-VAVE', model: 'Chocolate Plus', firmware: null };
+        publish({ status: 'connected', identity, selection: clone(selection), capabilities: readOnly });
+        event('connection', UNIDENTIFIED_IDENTITY);
       } catch (error) {
         if (generation === epoch) {
           await disconnect(); publish({ status: 'error', reason: errorKey(error) });

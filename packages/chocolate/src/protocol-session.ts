@@ -17,7 +17,14 @@ export class ProtocolSession {
   readonly #session: Session;
   #busy = false;
   #desynchronized = false;
-  constructor(transport: Transport, clock?: SessionClock) { this.#session = new Session(transport, clock); }
+  readonly #readChunk: number;
+  /** readChunkSize: 1024 (qualified FootCtrlPlus_016) or 1009, the size observed from CubeSuite on another unit. */
+  constructor(transport: Transport, clock?: SessionClock, options: { readChunkSize?: number } = {}) {
+    this.#session = new Session(transport, clock);
+    const readChunk = options.readChunkSize ?? 1024;
+    integerInRange(readChunk, 1, 1024, 'readChunkSize');
+    this.#readChunk = readChunk;
+  }
   dispose(): void { this.#session.dispose(); }
 
   async #exclusive<T>(operation: () => Promise<T>): Promise<T> {
@@ -69,8 +76,8 @@ export class ProtocolSession {
     integerInRange(length, 1, candidateEvidence.configLength, 'length');
     if (address + length > 0x1_0000_0000) throw new ChocolateError('INVALID_ARGUMENT', { field: 'addressRange' });
     const bytes = new Uint8Array(length);
-    for (let offset = 0; offset < length; offset += 1024) {
-      const count = Math.min(1024, length - offset);
+    for (let offset = 0; offset < length; offset += this.#readChunk) {
+      const count = Math.min(this.#readChunk, length - offset);
       const packet = await this.#exchange(encodeFlashRead(4, address + offset, count), (candidate) => {
         if (candidate.command !== 0x23) return false;
         const response = decodeFlashReadResponse(candidate);
