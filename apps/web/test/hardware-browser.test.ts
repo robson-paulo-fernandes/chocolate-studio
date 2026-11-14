@@ -81,15 +81,28 @@ describe('browser hardware boundary with synthetic MIDI endpoints', () => {
     await expect(f.service.connect({ inputId: f.input.id, outputId: f.output.id })).rejects.toThrow('hardware.unsupportedDevice');
     expect(f.writes).toBe(0); expect(f.service.getSnapshot().capabilities.write).toBe(false);
   });
-  it('sends through the Mac app CoreMIDI bridge when present, never also through Web MIDI', async () => {
-    const f = setup(); const sent: { name: string; bytes: number[] }[] = [];
+  it('uses the Mac app CoreMIDI bridge in both directions, never Web MIDI as well', async () => {
+    const f = setup(); const sent: { name: string; bytes: number[] }[] = []; const listened: string[] = [];
     const webSend = f.output.send.bind(f.output); let webCalls = 0;
     f.output.send = (data: number[]) => { webCalls++; webSend(data); };
-    vi.stubGlobal('chocolateNative', { sendMidi: async (name: string, bytes: number[]) => { sent.push({ name, bytes }); webSend(bytes); } });
+    let deliver: ((bytes: Uint8Array) => void) | undefined; let stops = 0;
+    // the synthetic device answers on the Web MIDI input object; the bridge forwards those replies as CoreMIDI would
+    f.input.addEventListener('midimessage', message => deliver?.(new Uint8Array((message as MIDIMessageEvent).data!)));
+    vi.stubGlobal('chocolateNative', {
+      sendMidi: async (name: string, bytes: number[]) => { sent.push({ name, bytes }); webSend(bytes); },
+      listenMidi: async (name: string) => { listened.push(name); },
+      stopMidi: async () => { stops++; },
+      onMidiIn: (callback: (bytes: Uint8Array) => void) => { deliver = callback; return () => { deliver = undefined; }; },
+    });
     await connect(f);
     expect(f.service.getSnapshot().identity?.name).toBe('FootCtrlPlus_016');
+    expect(listened).toEqual(['Synthetic input']);
     expect(sent).toEqual([{ name: 'Synthetic output', bytes: [0xf0, 0x00, 0x32, 0x45, 0x00, 0x00, 0x00, 0x40, 0x7f, 0xf7] }]);
     expect(webCalls).toBe(0);
+    // one incoming identity reply in the history: Web MIDI input was not counted as well
+    expect(f.service.getSnapshot().history.filter(e => e.direction === 'in')).toHaveLength(1);
+    const read = await f.service.read(); expect(read.rawBackup.bytes).toEqual(f.bytes);
+    await f.service.disconnect(); expect(stops).toBe(1); expect(deliver).toBeUndefined();
   });
   it('falls back to the CubeSuite read when the identity request gets no reply, read-only', async () => {
     const f = setup(null); f.bytes[0] = 3; await connect(f);

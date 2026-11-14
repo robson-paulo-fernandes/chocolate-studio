@@ -18,7 +18,7 @@ rm -rf web && cp -R "$ROOT/apps/web/dist" web
 
 echo "CoreMIDI sender: native/midi-send.swift -> bin/chocolate-midi-send"
 mkdir -p bin
-swiftc -O -target arm64-apple-macos13 -framework CoreMIDI native/midi-send.swift -o bin/chocolate-midi-send
+swiftc -O -swift-version 5 -target arm64-apple-macos13 -framework CoreMIDI native/midi-send.swift -o bin/chocolate-midi-send
 
 # icon: assets/icon-1024.png -> assets/icon.icns
 if [[ ! -f assets/icon.icns || assets/icon-1024.png -nt assets/icon.icns ]]; then

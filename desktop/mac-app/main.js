@@ -2,8 +2,8 @@
 // build.sh). Nothing runs outside the page: no backend, no network service. The page is served from app://studio
 // (a secure, standard scheme, so Web MIDI, IndexedDB and localStorage work as on the web), and the only permission
 // granted is MIDI with SysEx, which the editor needs to read and write the Chocolate.
-// Outgoing MIDI goes through a small CoreMIDI helper (native/midi-send.swift): the Chocolate Plus ignored the
-// fragmented SysEx that Chromium's Web MIDI output produced. Incoming MIDI still uses Web MIDI.
+// MIDI to and from the Chocolate goes through a small CoreMIDI helper (native/midi-send.swift), not Chromium's
+// Web MIDI: on macOS 26 the Chocolate Plus ignored Web MIDI's fragmented SysEx, and its replies never reached the page.
 const { app, BrowserWindow, ipcMain, protocol, net, session, shell } = require('electron');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -44,10 +44,15 @@ function limitPermissions() {
 
 // The packaged app keeps its files in app.asar; an executable cannot run from inside it, so build.sh unpacks bin/
 // to app.asar.unpacked.
+// The packaged app keeps its files in app.asar; an executable cannot run from inside it, so build.sh unpacks bin/
+// to app.asar.unpacked.
 const HELPER = path.join(__dirname.replace(/app\.asar$/, 'app.asar.unpacked'), 'bin', 'chocolate-midi-send');
 let helper = null;
 let nextId = 1;
 const waiting = new Map();
+function broadcast(channel, payload) {
+  for (const win of BrowserWindow.getAllWindows()) win.webContents.send(channel, payload);
+}
 function startHelper() {
   if (helper) return helper;
   if (!fs.existsSync(HELPER)) throw new Error('midi-helper-missing');
@@ -58,38 +63,61 @@ function startHelper() {
     buffered += chunk;
     let newline;
     while ((newline = buffered.indexOf('\n')) >= 0) {
-      const [id, status, reason] = buffered.slice(0, newline).split('\t');
+      const fields = buffered.slice(0, newline).split('\t');
       buffered = buffered.slice(newline + 1);
-      const entry = waiting.get(id);
+      if (fields[0] === 'in') {
+        const text = fields[1] || '';
+        const bytes = [];
+        for (let i = 0; i + 1 < text.length; i += 2) bytes.push(parseInt(text.slice(i, i + 2), 16));
+        if (bytes.length) broadcast('midi:in', bytes);
+        continue;
+      }
+      const entry = waiting.get(fields[0]);
       if (!entry) continue;
-      waiting.delete(id);
-      if (status === 'ok') entry.resolve(); else entry.reject(new Error('midi-send:' + (reason || 'failed')));
+      waiting.delete(fields[0]);
+      if (fields[1] === 'ok') entry.resolve(); else entry.reject(new Error('midi-native:' + (fields[2] || 'failed')));
     }
   });
   child.on('exit', () => {
     if (helper === child) helper = null;
-    for (const entry of waiting.values()) entry.reject(new Error('midi-send:helper-exited'));
+    for (const entry of waiting.values()) entry.reject(new Error('midi-native:helper-exited'));
     waiting.clear();
   });
   helper = child;
   return child;
 }
-function nativeSend(outputName, bytes) {
-  if (typeof outputName !== 'string' || !outputName || /[\t\n]/.test(outputName)) throw new Error('midi-send:bad-name');
-  if (!Array.isArray(bytes) || !bytes.length || bytes.length > 8192 ||
-      !bytes.every(value => Number.isInteger(value) && value >= 0 && value <= 255)) throw new Error('midi-send:bad-bytes');
+function request(parts) {
   const child = startHelper();
   const id = String(nextId++);
-  const hex = bytes.map(value => value.toString(16).padStart(2, '0')).join('');
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { waiting.delete(id); reject(new Error('midi-send:timeout')); }, 3000);
+    const timer = setTimeout(() => { waiting.delete(id); reject(new Error('midi-native:timeout')); }, 3000);
     waiting.set(id, { resolve: () => { clearTimeout(timer); resolve(); }, reject: error => { clearTimeout(timer); reject(error); } });
-    child.stdin.write(id + '\t' + outputName + '\t' + hex + '\n');
+    child.stdin.write([id, ...parts].join('\t') + '\n');
   });
 }
+const validName = value => typeof value === 'string' && value.length > 0 && value.length < 256 && !/[\t\n\r]/.test(value);
+function nativeSend(outputName, bytes) {
+  if (!validName(outputName)) throw new Error('midi-native:bad-name');
+  if (!Array.isArray(bytes) || !bytes.length || bytes.length > 8192 ||
+      !bytes.every(value => Number.isInteger(value) && value >= 0 && value <= 255)) throw new Error('midi-native:bad-bytes');
+  return request(['send', outputName, bytes.map(value => value.toString(16).padStart(2, '0')).join('')]);
+}
+function nativeListen(inputName) {
+  if (!validName(inputName)) throw new Error('midi-native:bad-name');
+  return request(['listen', inputName]);
+}
+const fromApp = event => isAppUrl(event.senderFrame ? event.senderFrame.url : '');
 ipcMain.handle('midi:send', (event, outputName, bytes) => {
-  if (!isAppUrl(event.senderFrame ? event.senderFrame.url : '')) throw new Error('midi-send:forbidden');
+  if (!fromApp(event)) throw new Error('midi-native:forbidden');
   return nativeSend(outputName, bytes);
+});
+ipcMain.handle('midi:listen', (event, inputName) => {
+  if (!fromApp(event)) throw new Error('midi-native:forbidden');
+  return nativeListen(inputName);
+});
+ipcMain.handle('midi:stop', event => {
+  if (!fromApp(event)) throw new Error('midi-native:forbidden');
+  return helper ? request(['stop']) : undefined;
 });
 
 function createWindow() {
